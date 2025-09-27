@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Breast Cancer Prediction</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: #f7f7f7;
+			margin: 0;
+			padding: 0;
+		}
+		.container {
+			max-width: 700px;
+			margin: 40px auto;
+			background: #fff;
+			border-radius: 8px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			padding: 32px 24px;
+		}
+		h2 {
+			text-align: center;
+			color: #333;
+		}
+		form {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 16px;
+		}
+		.form-group {
+			flex: 1 1 220px;
+			display: flex;
+			flex-direction: column;
+		}
+		label {
+			margin-bottom: 4px;
+			color: #444;
+		}
+		input[type="number"] {
+			padding: 6px 8px;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+		}
+		button {
+			margin: 24px auto 0 auto;
+			display: block;
+			padding: 10px 32px;
+			background: #1976d2;
+			color: #fff;
+			border: none;
+			border-radius: 4px;
+			font-size: 1.1em;
+			cursor: pointer;
+			transition: background 0.2s;
+		}
+		button:hover {
+			background: #125ea8;
+		}
+		.result {
+			margin-top: 24px;
+			text-align: center;
+			font-size: 1.2em;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h2>Breast Cancer Prediction</h2>
+		<form id="predictForm">
+			<div class="form-group" style="flex:1 1 100%;">
+				<label for="csvinput"><b>Paste CSV Row (all columns except diagnosis):</b></label>
+				<textarea id="csvinput" name="csvinput" rows="2" style="width:100%;font-size:1em;" placeholder="e.g. 842302,17.99,10.38,122.8,...,0.1189"></textarea>
+				<button type="button" id="autofillBtn" style="margin-top:8px;">Autofill Fields</button>
+			</div>
+			<div id="fieldsContainer" style="display:flex;flex-wrap:wrap;gap:16px;"></div>
+			<button type="submit">Predict</button>
+		</form>
+		<div class="result" id="predictionResult"></div>
+		<div class="result" id="result"></div>
+	</div>
+	<script>
+		// List of columns in order, excluding 'diagnosis'
+		const columns = [
+			"id","radius_mean","texture_mean","perimeter_mean","area_mean","smoothness_mean","compactness_mean","concavity_mean","concave_points_mean","symmetry_mean","fractal_dimension_mean","radius_se","texture_se","perimeter_se","area_se","smoothness_se","compactness_se","concavity_se","concave_points_se","symmetry_se","fractal_dimension_se","radius_worst","texture_worst","perimeter_worst","area_worst","smoothness_worst","compactness_worst","concavity_worst","concave_points_worst","symmetry_worst","fractal_dimension_worst"
+		];
+
+		// Render input fields for each column
+		const fieldsContainer = document.getElementById('fieldsContainer');
+		columns.forEach(col => {
+			const group = document.createElement('div');
+			group.className = 'form-group';
+			const label = document.createElement('label');
+			label.htmlFor = col;
+			label.textContent = col.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+			const input = document.createElement('input');
+			input.type = col === 'id' ? 'number' : 'number';
+			input.step = 'any';
+			input.id = col;
+			input.name = col;
+			input.required = true;
+			group.appendChild(label);
+			group.appendChild(input);
+			fieldsContainer.appendChild(group);
+		});
+
+		// Autofill fields from CSV row
+		document.getElementById('autofillBtn').addEventListener('click', function() {
+			const csv = document.getElementById('csvinput').value.trim();
+			const values = csv.split(',').map(v => v.trim());
+			if (values.length !== columns.length) {
+				alert(`Error: Expected ${columns.length} values, got ${values.length}.`);
+				return;
+			}
+			columns.forEach((col, i) => {
+				document.getElementById(col).value = values[i];
+			});
+		});
+
+		// On form submit, collect all field values and send to backend
+		document.getElementById('predictForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const data = {};
+    let allFilled = true;
+    columns.forEach(col => {
+        const val = document.getElementById(col).value;
+        if (val === '') allFilled = false;
+        data[col] = val;
+    });
+    if (!allFilled) {
+        document.getElementById('predictionResult').textContent = 'Please fill all fields.';
+        return;
+    }
+    document.getElementById('predictionResult').textContent = 'Predicting...';
+    try {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.error) {
+            document.getElementById('predictionResult').textContent = 'Error: ' + result.error;
+        } else {
+            document.getElementById('predictionResult').textContent = 'Prediction: ' + result.prediction;
+        }
+    } catch (err) {
+        document.getElementById('predictionResult').textContent = 'Network Error: ' + err.message;
+    }
+});
+	</script>
+</body>
+</html>
