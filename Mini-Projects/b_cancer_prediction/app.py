@@ -16,7 +16,7 @@ def predict():
         data = request.get_json()
 
         # List of expected features in correct order
-        feature_names = ['id',
+        feature_names = [
             'radius_mean', 'texture_mean', 'perimeter_mean', 'area_mean',
             'smoothness_mean', 'compactness_mean', 'concavity_mean', 'concave_points_mean',
             'symmetry_mean', 'fractal_dimension_mean', 'radius_se', 'texture_se',
