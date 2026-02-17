@@ -5,8 +5,10 @@ import pickle
 
 
 app = Flask(__name__)
-model = pickle.load(open('dtr.pkl', 'rb'))
-preprocessor = pickle.load(open('preprocessor.pkl', 'rb'))
+# model = pickle.load(open('dtr.pkl', 'rb'))
+# preprocessor = pickle.load(open('preprocessor.pkl', 'rb'))
+model = pickle.load(open("C:\yogesh gowda\D\Yogesh\Machine-Learning-Practice\Mini-Projects\crop_yeild\dtr.pkl", 'rb'))
+preprocessor = pickle.load(open("C:\yogesh gowda\D\Yogesh\Machine-Learning-Practice\Mini-Projects\crop_yeild\preprocessor.pkl", 'rb'))
 
 @app.route('/')
 def index():

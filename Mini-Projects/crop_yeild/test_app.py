@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 
 # Load model and preprocessor
-model = pickle.load(open('dtr.pkl', 'rb'))
-preprocessor = pickle.load(open('preprocessor.pkl', 'rb'))
+model = pickle.load(open(r'dtr.pkl', 'rb'))
+preprocessor = pickle.load(open(r'preprocessor.pkl', 'rb'))
 
 print("Model type:", type(model))
 print("Preprocessor type:", type(preprocessor))
